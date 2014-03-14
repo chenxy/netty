@@ -315,7 +315,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
         }
 
         /**
-         * Returns {@code true} if the current {@link Thread} has a {@link ThreadLocal} cache for the allocated
+         * Returns {@code true} if the calling {@link Thread} has a {@link ThreadLocal} cache for the allocated
          * buffers.
          */
         public boolean exists() {
@@ -323,7 +323,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
         }
 
         /**
-         * Free all cached buffers for the {@link Thread}.
+         * Free all cached buffers for the calling {@link Thread}.
          */
         public void free() {
             PoolThreadCache cache = super.get();
