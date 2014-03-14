@@ -40,20 +40,25 @@ final class PoolThreadCache {
     // Used for bitshifting when calculate the index of normal caches later
     private final int numShiftsNormalDirect;
     private final int numShiftsNormalHeap;
+    private final int freeSweepAllocationThreshold;
 
     private int allocations;
-    private static final int FREE_SWEEP_ALLOCATION_THRESHOLD = 8192;
 
     // TODO: Test if adding padding helps under contention
     //private long pad0, pad1, pad2, pad3, pad4, pad5, pad6, pad7;
 
     PoolThreadCache(PoolArena<byte[]> heapArena, PoolArena<ByteBuffer> directArena,
                     int tinyCacheSize, int smallCacheSize, int normalCacheSize,
-                    int maxCachedBufferCapacity) {
+                    int maxCachedBufferCapacity, int freeSweepAllocationThreshold) {
         if (maxCachedBufferCapacity < 0) {
             throw new IllegalArgumentException("maxCachedBufferCapacity: "
                     + maxCachedBufferCapacity + " (expected: >= 0)");
         }
+        if (freeSweepAllocationThreshold < 1) {
+            throw new IllegalArgumentException("freeSweepAllocationThreshold: "
+                    + maxCachedBufferCapacity + " (expected: > 0)");
+        }
+        this.freeSweepAllocationThreshold = freeSweepAllocationThreshold;
         this.heapArena = heapArena;
         this.directArena = directArena;
         if (directArena != null) {
@@ -155,7 +160,7 @@ final class PoolThreadCache {
             return false;
         }
         boolean allocated = cache.allocate(buf, reqCapacity);
-        if (++ allocations >= FREE_SWEEP_ALLOCATION_THRESHOLD) {
+        if (++ allocations >= freeSweepAllocationThreshold) {
             allocations = 0;
             freeUpIfNecessary();
         }

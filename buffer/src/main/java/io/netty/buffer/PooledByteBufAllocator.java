@@ -37,6 +37,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
     private static final int DEFAULT_SMALL_CACHE_SIZE;
     private static final int DEFAULT_NORMAL_CACHE_SIZE;
     private static final int DEFAULT_MAX_CACHED_BUFFER_CAPACITY;
+    private static final int DEFAULT_CACHE_FREE_SWEEP_ALLOCATION_THRESHOLD;
 
     private static final int MIN_PAGE_SIZE = 4096;
     private static final int MAX_CHUNK_SIZE = (int) (((long) Integer.MAX_VALUE + 1) / 2);
@@ -89,6 +90,10 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
         DEFAULT_MAX_CACHED_BUFFER_CAPACITY = SystemPropertyUtil.getInt(
                 "io.netty.allocator.maxCachedBufferCapacity", 32 * 1024);
 
+        // the number of threshold of allocations when cached entries will be freed up if not frequently used
+        DEFAULT_CACHE_FREE_SWEEP_ALLOCATION_THRESHOLD = SystemPropertyUtil.getInt(
+                "io.netty.allocator.cacheFreeSweepAllocationThreshold", 8192);
+
         if (logger.isDebugEnabled()) {
             logger.debug("-Dio.netty.allocator.numHeapArenas: {}", DEFAULT_NUM_HEAP_ARENA);
             logger.debug("-Dio.netty.allocator.numDirectArenas: {}", DEFAULT_NUM_DIRECT_ARENA);
@@ -107,6 +112,8 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
             logger.debug("-Dio.netty.allocator.smallCacheSize: {}", DEFAULT_SMALL_CACHE_SIZE);
             logger.debug("-Dio.netty.allocator.normalCacheSize: {}", DEFAULT_NORMAL_CACHE_SIZE);
             logger.debug("-Dio.netty.allocator.maxCachedBufferCapacity: {}", DEFAULT_MAX_CACHED_BUFFER_CAPACITY);
+            logger.debug("-Dio.netty.allocator.cacheFreeSweepAllocationThreshold: {}",
+                    DEFAULT_CACHE_FREE_SWEEP_ALLOCATION_THRESHOLD);
         }
     }
 
@@ -301,7 +308,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
                 // easily free the cached stuff again once the EventExecutor completes later.
                 cache = new PoolThreadCache(
                         heapArena, directArena, tinyCacheSize, smallCacheSize, normalCacheSize,
-                        DEFAULT_MAX_CACHED_BUFFER_CAPACITY);
+                        DEFAULT_MAX_CACHED_BUFFER_CAPACITY, DEFAULT_CACHE_FREE_SWEEP_ALLOCATION_THRESHOLD);
                 set(cache);
             }
             return cache;
