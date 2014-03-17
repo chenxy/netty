@@ -803,6 +803,7 @@ JNIEXPORT jobject JNICALL Java_io_netty_channel_epoll_Native_remoteAddress(JNIEn
 
     len = sizeof addr;
     if (getpeername(fd, (struct sockaddr*)&addr, &len) == -1) {
+        throwIOException(env, exceptionMessage("Error during getpeername(...): ", err));
         return NULL;
     }
     return createInetSocketAddress(env, addr);
@@ -814,6 +815,7 @@ JNIEXPORT jobject JNICALL Java_io_netty_channel_epoll_Native_localAddress(JNIEnv
 
     len = sizeof addr;
     if (getsockname(fd, (struct sockaddr*)&addr, &len) == -1) {
+        throwIOException(env, exceptionMessage("Error during getsockname(...): ", err));
         return NULL;
     }
     return createInetSocketAddress(env, addr);

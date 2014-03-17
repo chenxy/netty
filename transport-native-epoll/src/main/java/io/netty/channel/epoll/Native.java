@@ -111,8 +111,8 @@ final class Native {
     public static native boolean connect(int fd, byte[] address, int scopeId, int port) throws IOException;
     public static native boolean finishConnect(int fd) throws IOException;
 
-    public static native InetSocketAddress remoteAddress(int fd);
-    public static native InetSocketAddress localAddress(int fd);
+    public static native InetSocketAddress remoteAddress(int fd) throws IOException;
+    public static native InetSocketAddress localAddress(int fd) throws IOException;
     public static native int accept(int fd) throws IOException;
     public static native void shutdown(int fd, boolean read, boolean write) throws IOException;
 

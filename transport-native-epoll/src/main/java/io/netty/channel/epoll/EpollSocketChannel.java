@@ -79,12 +79,22 @@ public final class EpollSocketChannel extends AbstractEpollChannel implements So
 
     @Override
     protected SocketAddress localAddress0() {
-        return Native.localAddress(fd);
+        try {
+            return Native.localAddress(fd);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     protected SocketAddress remoteAddress0() {
-        return Native.remoteAddress(fd);
+        try {
+            return Native.remoteAddress(fd);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
