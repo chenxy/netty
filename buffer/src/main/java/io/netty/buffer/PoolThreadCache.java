@@ -162,7 +162,7 @@ final class PoolThreadCache {
         boolean allocated = cache.allocate(buf, reqCapacity);
         if (++ allocations >= freeSweepAllocationThreshold) {
             allocations = 0;
-            freeUpIfNecessary();
+            trim();
         }
         return allocated;
     }
@@ -217,29 +217,29 @@ final class PoolThreadCache {
         cache.free();
     }
 
-    void freeUpIfNecessary() {
-        freeUpIfNecessary(tinySubPageDirectCaches);
-        freeUpIfNecessary(smallSubPageDirectCaches);
-        freeUpIfNecessary(normalDirectCaches);
-        freeUpIfNecessary(tinySubPageHeapCaches);
-        freeUpIfNecessary(smallSubPageHeapCaches);
-        freeUpIfNecessary(normalHeapCaches);
+    void trim() {
+        trim(tinySubPageDirectCaches);
+        trim(smallSubPageDirectCaches);
+        trim(normalDirectCaches);
+        trim(tinySubPageHeapCaches);
+        trim(smallSubPageHeapCaches);
+        trim(normalHeapCaches);
     }
 
-    private static void freeUpIfNecessary(MemoryRegionCache<?>[] caches) {
+    private static void trim(MemoryRegionCache<?>[] caches) {
         if (caches == null) {
             return;
         }
         for (int i = 0; i < caches.length; i++) {
-            freeUpIfNecessary(caches[i]);
+            trim(caches[i]);
         }
     }
 
-    private static void freeUpIfNecessary(MemoryRegionCache<?> cache) {
+    private static void trim(MemoryRegionCache<?> cache) {
         if (cache == null) {
             return;
         }
-        cache.freeUpIfNecessary();
+        cache.trim();
     }
 
     private MemoryRegionCache<?> cacheForTiny(PoolArena<?> area, int normCapacity) {
@@ -398,14 +398,14 @@ final class PoolThreadCache {
         /**
          * Free up cached {@link PoolChunk}s if not allocated frequently enough.
          */
-        private void freeUpIfNecessary() {
+        private void trim() {
             int free = size() - maxEntriesInUse;
+            entriesInUse = 0;
+            maxEntriesInUse = 0;
 
             if (free <= maxUnusedCached) {
                 return;
             }
-            entriesInUse = 0;
-            maxEntriesInUse = 0;
 
             int i = head;
             for (; free > 0; free--) {
